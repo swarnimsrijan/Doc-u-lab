@@ -4,6 +4,7 @@ import com.docdost.user_service.enums.GlobalUserRoles;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -27,4 +28,11 @@ public class User {
     @Column(name="user_role")
     @Enumerated(EnumType.STRING)
     private GlobalUserRoles role;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
 }

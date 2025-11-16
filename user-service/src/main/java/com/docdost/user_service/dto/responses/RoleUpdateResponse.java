@@ -1,5 +1,6 @@
 package com.docdost.user_service.dto.responses;
 
+import com.docdost.user_service.enums.GlobalUserRoles;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,11 +11,10 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponse {
+public class RoleUpdateResponse {
     private UUID userId;
-    private String email;
-    private String username;
-    private String role;
-    private LocalDateTime createdAt;
+    private GlobalUserRoles oldRole;
+    private GlobalUserRoles newRole;
     private LocalDateTime updatedAt;
 }
+
