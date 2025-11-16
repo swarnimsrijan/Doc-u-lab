@@ -1,5 +1,6 @@
 package com.docdost.user_service.Entity;
 
+import com.docdost.user_service.Enums.GlobalUserRoles;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -22,4 +23,8 @@ public class User {
 
     @Column(name="password")
     private String password;
+
+    @Column(name="user_role")
+    @Enumerated(EnumType.STRING)
+    private GlobalUserRoles role;
 }

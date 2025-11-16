@@ -10,3 +10,17 @@
 - Implementing SSO(as well)
 
 - Once a user is onboarded which role should 
+
+
+
+
+
+## Things to do in user service
+- Register and log in features(jwt)
+- SSO login
+- User actions
+- Adding logger
+- adding metrics(prometheus)
+- custom exception handling
+- writing test cases
+- 
