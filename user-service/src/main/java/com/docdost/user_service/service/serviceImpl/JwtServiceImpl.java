@@ -1,7 +1,7 @@
-package com.docdost.user_service.Service.ServiceImpl;
+package com.docdost.user_service.service.serviceImpl;
 
-import com.docdost.user_service.Entity.User;
-import com.docdost.user_service.Service.JwtService;
+import com.docdost.user_service.entity.User;
+import com.docdost.user_service.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

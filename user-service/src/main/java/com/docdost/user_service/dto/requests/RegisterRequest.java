@@ -1,4 +1,4 @@
-package com.docdost.user_service.DTO.requests;
+package com.docdost.user_service.dto.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,8 +1,8 @@
-package com.docdost.user_service.Controllers;
+package com.docdost.user_service.controller;
 
-import com.docdost.user_service.DTO.requests.LogInRequest;
-import com.docdost.user_service.DTO.requests.RegisterRequest;
-import com.docdost.user_service.Service.AuthService;
+import com.docdost.user_service.dto.requests.LogInRequest;
+import com.docdost.user_service.dto.requests.RegisterRequest;
+import com.docdost.user_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

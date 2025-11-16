@@ -1,14 +1,13 @@
-package com.docdost.user_service.DTO.requests;
+package com.docdost.user_service.dto.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class UserRequest {
-    private String username;
-    private String email;
+@NoArgsConstructor
+public class LogInRequest {
+    private String identifier;
     private String password;
 }

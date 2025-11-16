@@ -1,6 +1,6 @@
-package com.docdost.user_service.Service;
+package com.docdost.user_service.service;
 
-import com.docdost.user_service.Entity.User;
+import com.docdost.user_service.entity.User;
 
 import java.util.Date;
 

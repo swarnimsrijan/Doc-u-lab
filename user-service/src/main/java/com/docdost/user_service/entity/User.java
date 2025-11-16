@@ -1,6 +1,6 @@
-package com.docdost.user_service.Entity;
+package com.docdost.user_service.entity;
 
-import com.docdost.user_service.Enums.GlobalUserRoles;
+import com.docdost.user_service.enums.GlobalUserRoles;
 import jakarta.persistence.*;
 import lombok.Data;
 

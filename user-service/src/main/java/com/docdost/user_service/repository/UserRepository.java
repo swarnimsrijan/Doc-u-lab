@@ -1,6 +1,6 @@
-package com.docdost.user_service.Repository;
+package com.docdost.user_service.repository;
 
-import com.docdost.user_service.Entity.User;
+import com.docdost.user_service.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

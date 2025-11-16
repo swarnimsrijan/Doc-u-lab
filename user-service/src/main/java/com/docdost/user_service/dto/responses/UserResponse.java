@@ -1,4 +1,4 @@
-package com.docdost.user_service.DTO.responses;
+package com.docdost.user_service.dto.responses;
 
 public class UserResponse {
     private String username;

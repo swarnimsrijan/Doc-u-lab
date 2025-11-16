@@ -1,7 +1,7 @@
-package com.docdost.user_service.Controllers;
+package com.docdost.user_service.controller;
 
-import com.docdost.user_service.DTO.responses.UserResponse;
-import com.docdost.user_service.Service.UserService;
+import com.docdost.user_service.dto.responses.UserResponse;
+import com.docdost.user_service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

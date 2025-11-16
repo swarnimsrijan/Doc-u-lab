@@ -1,9 +1,9 @@
-package com.docdost.user_service.Service.ServiceImpl;
+package com.docdost.user_service.service.serviceImpl;
 
-import com.docdost.user_service.DTO.responses.UserResponse;
-import com.docdost.user_service.Entity.User;
-import com.docdost.user_service.Repository.UserRepository;
-import com.docdost.user_service.Service.UserService;
+import com.docdost.user_service.dto.responses.UserResponse;
+import com.docdost.user_service.entity.User;
+import com.docdost.user_service.repository.UserRepository;
+import com.docdost.user_service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

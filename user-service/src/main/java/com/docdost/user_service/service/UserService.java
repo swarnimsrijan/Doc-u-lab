@@ -1,6 +1,6 @@
-package com.docdost.user_service.Service;
+package com.docdost.user_service.service;
 
-import com.docdost.user_service.DTO.responses.UserResponse;
+import com.docdost.user_service.dto.responses.UserResponse;
 
 import java.util.UUID;
 
