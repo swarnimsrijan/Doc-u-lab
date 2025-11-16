@@ -1,4 +1,6 @@
 package com.docdost.user_service.Enums;
 
-public class GlobalUserRoles {
+public enum GlobalUserRoles {
+    ADMIN,
+    USER,
 }

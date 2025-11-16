@@ -1,4 +1,8 @@
 package com.docdost.user_service.Service.ServiceImpl;
 
-public class JwtServiceImpl {
+import com.docdost.user_service.Service.JwtService;
+import org.springframework.stereotype.Service;
+
+@Service
+public class JwtServiceImpl implements JwtService {
 }

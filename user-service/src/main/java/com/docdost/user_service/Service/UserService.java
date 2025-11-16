@@ -1,4 +1,4 @@
-package com.docdost.user_service.Service.ServiceImpl;
+package com.docdost.user_service.Service;
 
 import com.docdost.user_service.DTO.responses.UserResponse;
 
