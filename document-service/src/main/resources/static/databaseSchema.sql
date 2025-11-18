@@ -1,0 +1,77 @@
+---- Documents Table
+--CREATE TABLE documents (
+--    document_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--    owner_id UUID NOT NULL,
+--    title VARCHAR(255) NOT NULL,
+--    document_type VARCHAR(50) NOT NULL, -- json, markdown, yaml, xml, mermaid
+--    status VARCHAR(50) DEFAULT 'draft', -- draft, published, archived
+--    version INTEGER DEFAULT 1,
+--    content_location VARCHAR(500), -- S3 path for large content
+--    metadata JSONB, -- Custom metadata
+--    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--    deleted_at TIMESTAMP NULL,
+--
+--    CONSTRAINT fk_owner FOREIGN KEY (owner_id) REFERENCES users(user_id) ON DELETE CASCADE
+--);
+--
+---- Document Content Table (for smaller documents stored in DB)
+--CREATE TABLE document_content (
+--    content_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--    document_id UUID NOT NULL UNIQUE,
+--    content TEXT NOT NULL, -- Actual document content
+--    content_hash VARCHAR(64), -- SHA-256 for change detection
+--    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--
+--    CONSTRAINT fk_document FOREIGN KEY (document_id) REFERENCES documents(document_id) ON DELETE CASCADE
+--);
+--
+---- Document Permissions (Role-based access per document)
+--CREATE TABLE document_permissions (
+--    permission_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--    document_id UUID NOT NULL,
+--    user_id UUID NOT NULL,
+--    role VARCHAR(50) NOT NULL, -- owner, editor, reader
+--    granted_by UUID NOT NULL, -- Who granted this permission
+--    granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--    expires_at TIMESTAMP NULL, -- Optional expiration
+--
+--    CONSTRAINT fk_doc FOREIGN KEY (document_id) REFERENCES documents(document_id) ON DELETE CASCADE,
+--    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+--    CONSTRAINT unique_doc_user UNIQUE (document_id, user_id)
+--);
+--
+---- Document Versions (for version history)
+--CREATE TABLE document_versions (
+--    version_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--    document_id UUID NOT NULL,
+--    version_number INTEGER NOT NULL,
+--    content TEXT NOT NULL, -- Snapshot of content at this version
+--    published_by UUID NOT NULL,
+--    published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--    change_summary VARCHAR(500), -- What changed
+--
+--    CONSTRAINT fk_doc_version FOREIGN KEY (document_id) REFERENCES documents(document_id) ON DELETE CASCADE,
+--    CONSTRAINT unique_doc_version UNIQUE (document_id, version_number)
+--);
+--
+---- Document Segments (for granular editing tracking)
+--CREATE TABLE document_segments (
+--    segment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--    document_id UUID NOT NULL,
+--    block_id VARCHAR(100) NOT NULL, -- Reference to block in JSON content
+--    last_edited_by UUID,
+--    last_edited_at TIMESTAMP,
+--
+--    CONSTRAINT fk_doc_segment FOREIGN KEY (document_id) REFERENCES documents(document_id) ON DELETE CASCADE,
+--    CONSTRAINT unique_doc_block UNIQUE (document_id, block_id)
+--);
+--
+---- Indexes for performance
+--CREATE INDEX idx_documents_owner ON documents(owner_id);
+--CREATE INDEX idx_documents_type ON documents(document_type);
+--CREATE INDEX idx_documents_status ON documents(status);
+--CREATE INDEX idx_permissions_user ON document_permissions(user_id);
+--CREATE INDEX idx_permissions_doc ON document_permissions(document_id);
+--CREATE INDEX idx_versions_doc ON document_versions(document_id);
+--CREATE INDEX idx_segments_doc ON document_segments(document_id);
