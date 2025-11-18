@@ -1,0 +1,100 @@
+# application.yml
+spring:
+  application:
+    name: document-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/docdost_db
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate # Use Flyway for migrations
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: document-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 2
+
+  security:
+    jwt:
+      secret: ${JWT_SECRET:your-secret-key-here-change-in-production}
+      expiration: 86400000 # 24 hours
+
+server:
+  port: 8081
+  servlet:
+    context-path: /document-service
+
+# Logging
+logging:
+  level:
+    com.docdost.document_service: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+
+# File Storage
+storage:
+  type: s3 # or 'local' for development
+  s3:
+    bucket: ${S3_BUCKET:docdost-documents}
+    region: ${AWS_REGION:us-east-1}
+    access-key: ${AWS_ACCESS_KEY:}
+    secret-key: ${AWS_SECRET_KEY:}
+  local:
+    path: ${LOCAL_STORAGE_PATH:./storage/documents}
+  max-file-size: 10MB # Maximum document size
+  max-content-db-size: 1MB # Store in DB if smaller, else S3
+
+# Document Processing
+document:
+  allowed-types:
+    - JSON
+    - MARKDOWN
+    - YAML
+    - XML
+    - MERMAID
+  max-version-history: 50 # Maximum versions to keep
+
+# gRPC Configuration (for internal service communication)
+grpc:
+  server:
+    port: 9091
+  client:
+    user-service:
+      address: static://localhost:9090
+      negotiationType: plaintext
