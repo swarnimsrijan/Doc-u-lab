@@ -1,4 +1,4 @@
-package com.docdost.user_service.exceptions;
+package com.docdost.user_service.exceptions.types;
 
 public class UserNotFoundException {
 }

@@ -1,7 +1,10 @@
-package com.docdost.user_service.service.serviceImpl;
+package com.docdost.user_service.service.impl;
 
 import com.docdost.user_service.dto.requests.LogInRequest;
 import com.docdost.user_service.dto.requests.RegisterRequest;
+import com.docdost.user_service.dto.requests.ResetPasswordRequest;
+import com.docdost.user_service.dto.responses.AuthResponse;
+import com.docdost.user_service.dto.responses.UserAvailabilityResponse;
 import com.docdost.user_service.repository.UserRepository;
 import com.docdost.user_service.service.AuthService;
 import com.docdost.user_service.service.JwtService;
@@ -18,12 +21,33 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
 
     @Override
-    public String register(RegisterRequest request) {
-        // register logic
+    public AuthResponse register(RegisterRequest request) {
+        return null;
     }
 
     @Override
-    public String login(LogInRequest request) {
-        // login logic
+    public AuthResponse login(LogInRequest request) {
+        return null;
     }
+
+    @Override
+    public AuthResponse refreshToken(String refreshToken){
+        return null;
+    }
+
+    @Override
+    public void forgotPassword(String email){
+
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequest request){
+
+    }
+
+    @Override
+    public UserAvailabilityResponse checkUsernameAvailability(String username){
+        return null;
+    }
+
 }

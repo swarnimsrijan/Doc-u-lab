@@ -1,4 +1,4 @@
-package com.docdost.user_service.config;
+package com.docdost.user_service.security;
 
 
 import org.springframework.context.annotation.Bean;

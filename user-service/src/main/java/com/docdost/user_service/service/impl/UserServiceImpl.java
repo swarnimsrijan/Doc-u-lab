@@ -1,13 +1,20 @@
-package com.docdost.user_service.service.serviceImpl;
+package com.docdost.user_service.service.impl;
 
+import com.docdost.user_service.dto.requests.EmailUpdateRequest;
+import com.docdost.user_service.dto.requests.PasswordUpdateRequest;
+import com.docdost.user_service.dto.requests.UsernameUpdateRequest;
+import com.docdost.user_service.dto.responses.RoleUpdateResponse;
 import com.docdost.user_service.dto.responses.UserResponse;
 import com.docdost.user_service.entity.User;
+import com.docdost.user_service.enums.GlobalUserRoles;
 import com.docdost.user_service.repository.UserRepository;
 import com.docdost.user_service.service.UserService;
+import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.management.relation.Role;
 import java.util.UUID;
 
 @Service
@@ -18,25 +25,37 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public void updateUsername(UUID userId, String newUsername) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setUsername(newUsername);
-        userRepository.save(user);
+    public UserResponse updateUsername(UUID userId, UsernameUpdateRequest request) {
+        return null;
     }
 
     @Override
-    public void updatePassword(UUID userId, String newPassword) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
+    public UserResponse updatePassword(UUID userId, PasswordUpdateRequest request) {
+        return null;
     }
 
     @Override
     public UserResponse getUser(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return new UserResponse(user.getUserId(), user.getUsername(), user.getEmail());
+        return null;
+    }
+
+    @Override
+    public User getUserByEmail(String email){
+        return null;
+    }
+
+    @Override
+    public User getUserByUsername(String username){
+        return null;
+    }
+
+    @Override
+    public UserResponse updateEmail(UUID userId, EmailUpdateRequest emailUpdateRequest){
+        return null;
+    }
+
+    @Override
+    public RoleUpdateResponse updateRole(UUID userId, GlobalUserRoles newRole){
+        return null;
     }
 }

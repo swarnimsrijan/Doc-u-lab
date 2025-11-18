@@ -1,4 +1,4 @@
-package com.docdost.user_service.service.serviceImpl;
+package com.docdost.user_service.service.impl;
 
 import com.docdost.user_service.entity.User;
 import com.docdost.user_service.service.JwtService;
@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class JwtServiceImpl implements JwtService {
@@ -39,7 +40,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String extractUserId(String token) {
+    public UUID extractUserId(String token) {
         return extractAllClaims(token, Claims::getSubject);
     }
 

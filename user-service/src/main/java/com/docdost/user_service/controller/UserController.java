@@ -21,7 +21,7 @@ public class UserController {
             @RequestParam UUID userId,
             @RequestParam String newUsername) {
 
-        userService.updateUsername(userId, newUsername);
+//        userService.updateUsername(userId, newUsername);
         return ResponseEntity.ok("Username updated");
     }
 
@@ -30,7 +30,7 @@ public class UserController {
             @RequestParam UUID  userId,
             @RequestParam String newPassword) {
 
-        userService.updatePassword(userId, newPassword);
+//        userService.updatePassword(userId, newPassword);
         return ResponseEntity.ok("Password updated");
     }
 
