@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/ws/**").permitAll() // Allow WebSocket connections
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/v1/documents/**").authenticated()
                         .anyRequest().permitAll()
                 );
