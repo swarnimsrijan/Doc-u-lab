@@ -1,0 +1,462 @@
+Comments — Async or Sync?
+
+Use both:
+
+Sync (real-time) for in-editor comments and replies so editors see them instantly (WebSocket / WebRTC channel).
+
+Async for durable notifications, email delivery and audit logging (publish events to Kafka → Notification service).
+
+Implementation: comment creation = write to Comment Service (HTTP). The Comment Service publishes an event; backend also pushes a WebSocket message to active clients.
+
+Comments — Microservice or monolith?
+
+Prefer Comment microservice (small, independent, event-driven):
+
+Reasons: different lifecycle, heavy notification/audit requirements, different scaling needs (comment traffic patterns differ).
+
+If you need to ship fast and team is tiny, start in monolith then extract later.
+
+Notifications — send to all roles or let sender decide?
+
+Provide both:
+
+Default policy: notify all users with access to the document (Reader/Editor/Owner) for document-level events (new doc, shared, major update).
+
+For comment-specific or segment-specific actions allow the commenter to choose recipients or target roles (owner/segment editors). UI default can be “Notify owners & editors”.
+
+For noise control allow per-user notification preferences (email/push/in-app, frequency).
+
+Collaboration — how to persist edits?
+
+Use an append-only operations log + a canonical document state:
+
+Store operations (ops) with metadata (user, timestamp, op-type, position/segment, version). Persist ops to Postgres or dedicated op-store.
+
+Index the canonical state (JSON document model) in DB for reads.
+
+Two proven models for real-time multi-user: Operational Transform (OT) or CRDT.
+
+CRDT is preferred for simpler offline/merge reasoning and eventual consistency.
+
+OT is mature and used by Google Docs but more complex to implement at scale.
+
+Also store segment-level contributions: record which user applied ops to which segment (for attribution).
+
+RAG Chatbot — Python or Spring AI?
+
+Use Python for RAG (LangChain, transformers) because the ecosystem is richer for embeddings / vector DBs and rapid experimentation.
+
+Expose RAG as a microservice (gRPC/HTTP) consumed by Java backends.
+
+If you prefer Java-only stack, Spring AI is viable for simpler use-cases but expect slower iteration.
+
+Search — microservice or same monolith?
+
+Search should be a separate service (dedicated index, scaling, specialized tech e.g., Elasticsearch/Opensearch or vector search Pinecone/Weaviate/Milvus).
+
+Rationale: different scaling, different storage, and independent lifecycle.
+
+Versioning — how to maintain?
+
+Use version commits similar to Git:
+
+A “publish” operation creates an immutable snapshot (version id, author, commit message, timestamp, base version).
+
+Keep ops history so you can reconstruct any version.
+
+Store diffs (ops) and optionally full snapshots (for fast reads).
+
+For UI: allow diff, rollback, and compare.
+
+Conflict resolution
+
+Prefer CRDTs to avoid manual conflicts for most edits.
+
+For segment-level conflicts where CRDT can't decide (e.g., two users change metadata simultaneously) provide:
+
+Merge UI with highlighted differences + “Accept theirs / Accept mine / Manual merge”.
+
+Provide optimistic locking for document-level destructive actions.
+
+2) Additional features you should consider
+
+Presence / Cursor Awareness (who’s viewing, live cursors).
+
+Realtime typing indicators and live selection highlights.
+
+Per-segment permissions (editor only on certain sections).
+
+Document templates and import/export templates.
+
+Collaborator activity feed (recent edits, comments).
+
+Granular audit trail (who changed what at field granularity).
+
+Autosave & offline support (local persistence + sync).
+
+Document locking modes (exclusive lock for sensitive ops).
+
+Scheduled publishing & approvals (owner approves before publish).
+
+Webhooks for third-party integrations.
+
+Third-party OAuth / SSO (Google, Microsoft, enterprise SAML).
+
+Rate limiting and abuse detection.
+
+WYSIWYG + plain text/markdown editor toggle.
+
+Live collaborative code blocks with syntax highlighting and runnable snippets.
+
+Document analytics (readers, time spent, most edited segments).
+
+Paid features for monetization (more storage, advanced RAG, private models).
+
+3) Better architecture (recommended)
+
+I recommend an event-driven microservices architecture with these services. I’ll give an “MVP” configuration and a scalable production configuration.
+
+Suggested services (production)
+
+API Gateway / Auth (BFF) — single entry point, JWT verification, rate limiting.
+
+User Service — user profiles, roles, SSO, authentication, user metadata.
+
+Document Service — core CRUD, document canonical states, versioning, storage metadata (not heavy real-time ops).
+
+Collaboration Service (Real-time) — real-time collaboration engine (CRDT/OT), presence, WebSocket rooms. Accepts operations and broadcasts them.
+
+Comment Service — comment store, threading, moderation.
+
+Notification Service — consumes events and sends email/push (with retry and dead-letter queues).
+
+Search Service — full-text + vector search (Elasticsearch for text + vector store for embeddings).
+
+RAG Service — embedding generation, query agent, caching; uses vector DB + LLM.
+
+Audit Service — append-only event store for admin access.
+
+File/Media Service — object storage (S3) for images, attachments, original uploaded files.
+
+Gateway / CDN for static assets.
+
+Orchestration: Kafka for events, Postgres for transactional storage, Redis for caching and presence.
+
+Deployment/infra
+
+Kubernetes for orchestration, Horizontal Pod Autoscaling.
+
+Use managed services where possible: managed Kafka (MSK / Confluent), managed Elastic/Pinecone, managed Postgres, S3-compatible storage.
+
+Observability: Prometheus, Grafana, Loki, OpenTelemetry.
+
+Sequence of events (example: new comment)
+
+Client posts comment to Comment Service (HTTP) → stored in Postgres.
+
+Comment Service publishes CommentAdded to Kafka.
+
+Notification Service consumes event → persists notification queue → attempts push/email retry.
+
+Collaboration Service pushes real-time websocket message to active clients.
+
+Reduced / MVP architecture
+
+If you need to ship fast:
+
+Start with three services:
+
+Monolith (User + Document + Comment) — Spring Boot modular monolith.
+
+Collaboration real-time service — separate Node/Java service with CRDT library and WebSockets.
+
+Notification worker — simple Kafka + worker or even Redis pub/sub for MVP.
+
+Add Search, RAG, Audit as separate microservices later.
+
+4) Design patterns, principles & microservice patterns to use
+Design principles
+
+Single Responsibility per service.
+
+YAGNI & Incremental delivery — start small, extract later.
+
+Fail-fast & graceful degradation — degrade non-critical features (RAG) if dependencies fail.
+
+Idempotency for events & endpoints.
+
+Least privilege for security.
+
+Immutable data for events & versions.
+
+OO & Architectural patterns
+
+Repository + Unit of Work (for DB access).
+
+Factory (create document types / editors).
+
+Strategy (pluggable serializers/parsers for doc types).
+
+Observer / Event Bus (internal pub/sub).
+
+Adapter (for import/export converters: docx <-> internal model).
+
+Command pattern (for operations/commands on documents).
+
+Builder (for complex document construction).
+
+Decorator (add features like access control).
+
+Distributed / Microservice patterns
+
+API Gateway + BFF pattern for client-specific needs.
+
+CQRS + Event Sourcing for document edit history and audit:
+
+Command service receives edits (writes to event store).
+
+Query service rebuilds materialized view for fast reads.
+
+This is optional but helpful for versioning and audit trail.
+
+Saga for long-running distributed transactions (e.g., share document → create permissions + notify + audit).
+
+Circuit Breaker, Retry, Bulkhead for resilience.
+
+Consumer-driven contracts for microservice integration testing.
+
+Backpressure and rate limiting for the real-time channel.
+
+5) Is the idea implementable? (scope & phases)
+
+Yes — absolutely implementable, but split into phases.
+
+Phase 0 (MVP: 6–12 weeks with a small team):
+
+User service (auth & JWT), Document CRUD (store canonical JSON), basic editor (single-user), role-based access (owner/editor/reader).
+
+Comments (simple persistent threaded comments).
+
+Notifications (in-app & email for shares/comments) using Kafka/Redis.
+
+Versioning: simple snapshots on publish.
+
+Realtime presence (who’s viewing).
+
+Simple search (Postgres full-text).
+
+Phase 1 (add 2–4 months):
+
+Realtime collaborative editing via CRDT/Collab Service + WebSockets.
+
+Advanced comment threading and segment tagging.
+
+Export/import: Markdown, PDF (export), docx import/export (basic).
+
+Audit trail microservice.
+
+Phase 2 (add 2–3 months):
+
+Full text + vector search (Elasticsearch + Pinecone).
+
+RAG service (Python) with vector DB + embedding cache.
+
+Conflict resolution UIs, diff/compare, rollbacks.
+
+Notes on team & time: with a small team (2–4 engineers) you can build MVP in months. A full-featured product with RAG, enterprise SSO, and robust scaling is a 6–12+ month project.
+
+6) MS Word / Google Docs / PDF support — do you implement native formats or create your own?
+
+Short answer: Build a robust internal document model (JSON) optimized for real-time collaboration, and provide import/export converters to/from common formats (DOCX, PDF, Markdown, Word). Don’t try to replicate Google Docs internals or edit native .docx in-place.
+
+Reasons & approach:
+
+Native Google Docs editing is not possible — Google Docs is proprietary and hosted. You can integrate with Google Drive/Docs APIs for import/export and for SSO only.
+
+MS Word (.docx): .docx is a zipped XML format. You can convert import/export using libraries (in Java: Apache POI, docx4j). But docx is not ideal as a live collaborative model — convert to your internal JSON for editing, then export to docx when needed.
+
+PDF: PDF is a presentation format not designed for round-trip editing. For editable PDFs you must convert PDF → editable representation (HTML or JSON model) using a PDF parser (PDFBox, PDF.js, commercial tools). Best approach: allow PDF import as read-only or convert to editable Markdown/HTML using OCR/PDF parsing for advanced features. For producing final PDF, export from your internal model to PDF (e.g., via HTML -> PDF renderers).
+
+Recommendation: Create a single canonical editor doc model (like Slate/ProseMirror JSON or a delta format similar to Quill/Operational Transforms). That makes realtime, versioning, and CRDT easier.
+
+Store: Document { id, type, rootJson, metadata, versions, opsLog }
+
+Provide import/export modules for docx, markdown, pdf (export), yaml, xml, mermaid (mermaid stored as code block).
+
+Concrete technical choices / stacks (recommended)
+
+Backend: Java + Spring Boot (you already prefer this) for core services. Use Spring WebFlux for reactive real-time endpoints if desired.
+
+Real-time collab: Use a dedicated service:
+
+Languages: Node.js (Yjs integration) or Java with Automerge/CRDT libs (Yjs ecosystem is mature).
+
+Libraries: Yjs (CRDT) for collaborative rich text + awareness protocol. Works with WebSocket provider.
+
+Database:
+
+Postgres for authoritative storage (documents metadata, version pointers).
+
+Event store: Kafka + compacted topics or a dedicated event store for history.
+
+Vector DB: Pinecone/Weaviate/Milvus for embeddings.
+
+Elasticsearch/Opensearch for full-text search.
+
+Cache / presence: Redis.
+
+Messaging: Kafka (eventing) + consumer groups.
+
+RAG: Python microservice using LangChain, OpenAI/LLM endpoints, huggingface models (if self-hosting).
+
+Storage: S3 for blobs and original uploads.
+
+Frontend: Vue + TypeScript, use editor framework like ProseMirror, TipTap (built on ProseMirror), or Slate. TipTap integrates well with Yjs for collaboration.
+
+Authentication: JWT + OAuth2 (support refresh tokens). Use roles stored in User Service (RBAC).
+
+CI/CD: GitHub Actions → image registry → Kubernetes.
+
+Data model (high level)
+
+Document table (Postgres)
+
+Document {
+  id UUID,
+  ownerId UUID,
+  name string,
+  slug string,
+  doc_type enum (markdown, yaml, mermaid, generic-richtext...),
+  canonical_json JSONB,
+  latest_version_id UUID,
+  created_at,
+  updated_at,
+  permissions JSONB (optional per-segment ACLs)
+}
+
+
+Ops table (append-only)
+
+DocOp {
+  id UUID,
+  document_id UUID,
+  user_id UUID,
+  op JSONB,        // CRDT delta or OT operation
+  base_version UUID,
+  timestamp
+}
+
+
+Comment table
+
+Comment {
+ id, document_id, parent_comment_id (nullable), segment_id (nullable),
+ comment_type, text, author_id, to_user_id (nullable),
+ created_at, updated_at, deleted_at
+}
+
+
+Notification table
+
+Notification {
+ id, user_id, payload JSONB, status (pending/sent/failed), retry_count, created_at
+}
+
+
+Audit events: store event type + payload in Audit Service (append-only).
+
+API sketch (examples)
+
+POST /api/v1/documents — create doc
+
+GET /api/v1/documents/{id} — get latest snapshot
+
+POST /api/v1/documents/{id}/ops — append op (includes user id, op payload)
+
+GET /api/v1/documents/{id}/ops?from=... — fetch ops to apply
+
+POST /api/v1/documents/{id}/publish — create new version snapshot
+
+POST /api/v1/documents/{id}/comments — add comment
+
+GET /api/v1/search?q=... — search service
+
+WS /realtime/{documentId} — join Yjs room
+
+Conflict resolution & attribution (detailed)
+
+Edits: CRDTs will merge content-level edits automatically.
+
+Segment-level metadata changes (e.g., someone changes section assignment):
+
+Use last-writer-wins for simple metadata, with audit trail and UI to undo.
+
+For critical fields, use optimistic locking / server-side merge with manual review.
+
+Attribution:
+
+For each op store userId and segmentId (computed by op or by segment annotation).
+
+Build a contributions index: segment -> list(userId, contributionPercent) by analyzing ops.
+
+Reliability / Operational concerns
+
+Use idempotency keys for operations (especially publish, share).
+
+Use dead letter queue for failed events.
+
+Notifications: worker with exponential backoff and capped retries.
+
+Rate limit real-time events to prevent DoS.
+
+Backup strategies for Postgres + S3.
+
+Security
+
+Harden JWT, use refresh tokens and short-lived access tokens.
+
+RBAC enforced in Document Service and API Gateway.
+
+Role transitions: deleting owner should transfer or cascade — don’t auto-delete pages on owner delete unless business rule says so (instead reassign or mark orphaned). If you must delete, cascade carefully and audit.
+
+Roadmap / Implementation plan (suggested milestones)
+
+Week 0–2: Project scaffolding, auth (JWT), user service, Postgres + S3, basic Document CRUD + simple editor (single user).
+
+Week 3–6: Comments, notifications (in-app), versioning snapshot on publish.
+
+Week 7–10: Real-time collab prototype using Yjs + TipTap, operations logging.
+
+Week 11–14: Search (basic Postgres full-text, migrate to Elasticsearch later), import/export markdown/docx basics.
+
+Month 4–6: Vector search + RAG service integration + caching; permission refinements; audit trails.
+
+Ongoing: Monitoring, scaling, multi-tenant support, enterprise features.
+
+Trade-offs & practical advice
+
+Don’t implement every document format natively. Use a canonical model + import/export. It simplifies collaboration and reduces complexity.
+
+Use Yjs (CRDT) and TipTap — proven, reduces the hard problems of collaborative editing.
+
+Offload heavy ML to Python microservice — iterate fast.
+
+Prefer managed infra (Elastic Cloud, Pinecone) to reduce ops burden.
+
+Quick Recommendations / Libraries
+
+Frontend editor: TipTap (ProseMirror) + Yjs for realtime.
+
+Java CRDT options are fewer — consider a Node real-time collab service using Yjs.
+
+Document -> docx conversion: docx4j or Apache POI (Java).
+
+PDF generation: wkhtmltopdf or Puppeteer from HTML render; for PDF import use PDFBox or third-party converters.
+
+Vector DB & embeddings: Pinecone/Weaviate/Milvus + OpenAI or local embedding models.
+
+Final verdict about document types
+
+Do not try to natively edit .docx or Google Docs format as they are not built for collaborative, real-time ops at your level.
+
+Do: build your own rich, interoperable JSON document model optimized for realtime collaboration, and provide robust import/export to docx/pdf/markdown/yaml/xml/mermaid.
