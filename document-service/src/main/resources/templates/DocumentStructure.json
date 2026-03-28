@@ -1,0 +1,32 @@
+{
+  "documentId": "uuid",
+  "version": 1,
+  "type": "json",
+  "metadata": {
+    "title": "My Document",
+    "created": "2025-01-01T00:00:00Z",
+    "modified": "2025-01-01T00:00:00Z"
+  },
+  "content": {
+    "blocks": [
+      {
+        "id": "block-1",
+        "type": "text",
+        "data": "Hello World",
+        "formatting": {"bold": false, "italic": false}
+      },
+      {
+        "id": "block-2",
+        "type": "image",
+        "data": "s3://bucket/image.png",
+        "alt": "Description"
+      },
+      {
+        "id": "block-3",
+        "type": "code",
+        "data": "console.log('hi')",
+        "language": "javascript"
+      }
+    ]
+  }
+}
